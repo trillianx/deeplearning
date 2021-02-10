@@ -18,17 +18,17 @@ There are a total of five courses in this specialization. The five courses are t
 
 ### What is a Neural Network? 
 
-The term **deep learning** refers to training Neural Networks, sometimes very large neural networks. So, what is a neural network? To understand this, consider an example of predicting housing prices. In the figure below, we have just variable, `size` of the size and the output variable is `price`. 
+The term **deep learning** refers to training Neural Networks, sometimes very large neural networks. So, what is a neural network? To understand this, consider an example of predicting housing prices. In the figure below, we have just one variable, `size`. This is the size of a house and the output variable is `price`. So, based on the size of the house, we predict its price.
 
 ![IMG_937A569299F8-1](Neural_Network_and_Deep_Learning.assets/IMG_937A569299F8-1.jpeg)
 
-We have few observations marked in purple. We fit a model to the data. It has a non-zero value after a certain point and zero value before that point. This is an example of very simple neural network. A neural network for this example is drawn as follows: 
+We have few observations marked in purple. We fit a model to the data. For given size, there are no houses and so the price for smaller sizes is zero. It has a non-zero value after a certain point and zero value before that point for a given size. This is an example of very simple neural network. A neural network for this example is drawn as follows: 
 
 ![IMG_F52BFCB8878B-1](Neural_Network_and_Deep_Learning.assets/IMG_F52BFCB8878B-1.jpeg)
 
-This neural network takes a single input and predicts the an output. The neuron in neural network is represented by the circle. The model that was fit on the data in the above figure is called the **Rectified Linear Unit** or ReLU. The ReLU function is zero for some values and then increases linearly. 
+This neural network takes a single input and predicts an output. The neuron in neural network is represented by the circle. The model that was fit on the data in the above figure is called the **Rectified Linear Unit** or ReLU. The ReLU function is zero for some values and then increases linearly. 
 
-Once we have a single neuron, we can easily stack them into multiple neurons and create a model complex problem. For example, in the housing example, we want to include more features such as `size`, `# of bedrooms`, `zipcode`, `family size`, `walkability`, `wealth`, `school quality`. The neural network in this case would look something like this: 
+Once we have a single neuron, we can easily stack them into multiple neurons and create a model that is more complex. For example, in the housing example above, rather than just the size, we include more features such as  `# of bedrooms`,  `zipcode`,  `family size`,  `walkability`,  `wealth`, `school quality`. The neural network in this case would look something like this: 
 
 
 
@@ -36,17 +36,17 @@ Once we have a single neuron, we can easily stack them into multiple neurons and
 
 This neural network is quite complex. It is to be noted that input features are the one of the left hand side of the image. The features in between such as `family size` etc...is automatically decided by the neural network. 
 
-We note that each neron is connected with each other. There are 4 input features on the left. This is known as the **input layer**.  The second neuron is called the **outpur layer**, which is followed by the output variable, `price`. 
+We note that each neuron is connected with each other. There are 4 input features on the left. This is known as the **input layer**.  The second neuron is called the **output layer**, which is followed by the output variable, `price`. 
 
 >   The first neurons are called **hidden units** because they are not visible to us. All we have are the inputs and the outputs. 
 
 >   When each neuron is connected with each other, we say that the neural network is said to be **densely connected**. 
 
-The neural network decides which features it wants to take in the middle as long as we give it the features in the input layer. 
+The neural network decides which features it wants to take in the middle as long as we give it the features in the input layer. This is the hallmark of neural networks. 
 
 ### Supervised Learning with Neural Networks
 
-Supervised learning consists of features and associated labels. In machine learning, we use both the input features and the output label to train the model. This is the reason why we call this type of learning supervised learning. Below is a table containing some examples of supervised learning and associated type of neural networks that are typically used for those type of problems. 
+Supervised learning consists of features and associated labels. In machine learning, we use both the input features and the output label to train the model. This is why we call this type of learning supervised learning. Below is a table containing some examples of supervised learning and associated type of neural networks that are typically used for those type of problems. 
 
 | Input         | Output            | Application         | Type of Neural Network       |
 | ------------- | ----------------- | ------------------- | ---------------------------- |
@@ -57,7 +57,7 @@ Supervised learning consists of features and associated labels. In machine learn
 | English       | French            | Machine Translation | Recurrent Neural Network     |
 | Image, Radar  | Car Positions     | Autonomous Driving  | Hybrid Neural Network        |
 
-We will learn these types of neural networks over this course. The neural networks are represented pictorally as, 
+We will learn these types of neural networks in this course. The neural networks are represented pictorally as, 
 
 <img src="Neural_Network_and_Deep_Learning.assets/IMG_21F4FF563E95-1.jpeg" alt="IMG_21F4FF563E95-1" style="zoom:30%;" />
 
@@ -73,13 +73,13 @@ Deep learning has been around since the 1970s. However, it has been taking off n
 
 <img src="Neural_Network_and_Deep_Learning.assets/IMG_FCF4B60B428B-1.jpeg" alt="IMG_FCF4B60B428B-1" style="zoom:50%;" />
 
-The figure shows the amount of data. in the x-axis and the performance of the model in the y-axis. For traditional ML algorithms, increasing the data does increase the performance in the beginning. However after some amount of data, the performance plateaus. On the other hand, for neural networks, the increase in data continues to increase their performance. Of course, the performance also depends on the complexity of the neural network. The only caveat is that the larger the neural network, the better it does with lots of data but longer it may take to train it. 
+The figure shows the amount of labeled data in the x-axis and the performance of the model in the y-axis. For traditional ML algorithms, increasing the data does increase the performance in the beginning. However after some amount of data, the performance plateaus. On the other hand, for neural networks, the increase in data continues to increase their performance. Of course, the performance also depends on the complexity of the neural network. The only caveat is that the larger the neural network, the better it does with lots of data but longer it may take to train it. 
 
 In the small training set regime, the traditional ML may be equally good as the neural network. The biggest breakthrough in the domain of AI has been the move from the **sigmoid function** to the **Rectificed Linear Unit (ReLU) function**.
 
  ![IMG_69F8D6B088C5-1](Neural_Network_and_Deep_Learning.assets/IMG_69F8D6B088C5-1.jpeg)
 
-The ReLU is better suited than the sigmoid function because at the extremities the gradient descent takes a very long time to converge because the sigmoid function approaches zero. This takes a lot more steps for the gradient descent to converge. However, in the case of ReLU this does not happen. The ReLU function is also called the **activation function** for the neural network.
+The ReLU is better suited than the sigmoid function because at the extremities the gradient descent takes a very long time to converge. The shape of the sigmoid function makes it hard. Because of this, the GD algorithm takes a lot of steps to converge. However, in the case of ReLU this does not happen. The ReLU function is also called the **activation function** for the neural network.
 
 >   Why do we need an activation function? An activation function decides, whether a neuron should be activated or not by calculating weighted sum of the bias of it. The purpose of the activation function is to introduce non-linearlity into the output of a neuron.
 >
@@ -108,16 +108,18 @@ The key concepts that are covered in this week are:
 This section describes the notations used for the entire course.
 
 *   $x$: represents a single training example,  $x \in \R^{n_x}$. In other words, the sample $x$ is a single sample that consists of $n_x$ features. 
+*   $y$: is the output label. 
+*   $(x, y)$: is a single training example. 
+*   $X \in \R^{n_x \times m}$: is the input matrix which has $n_x$ features and $m$ samples. This is a $(n_x,m)$ matrix. 
+*   $x^{(i)} \in \R^{n_x}$ : is the $i$th example represented as a column vector, $(n_x, 1)$. 
+*   $Y \in \R^{n_y \times m}$ is the label matrix which has $n_y$ labels and $m$ samples. This is a $(m, 1)$ matrix
+*   $y^{(i)} \in \R^{n_y}$: is the output label for the $i$th example and represented by a single value
 *   The superscript $(i)$ will denote the $i$th training example while the superscript $[l]$ will denote the $l$th **training layer**. 
 *   $m$: are the number of examples in the dataset
 *   $n_x$: the input size, also known as the features
 *   $n_y$: the output size (or the number of classes)
 *   $n_h^{[l]}$: the number of hidden units of the $l$th layer
 *   $L$: the number of layers in the network
-*   $X \in \R^{n_x \times m}$: is the input matrix
-*   $x^{(i)} \in \R^{n_x}$ : is the $i$th example represented as a column vector
-*   $Y \in \R^{n_y \times m}$ is the label matrix
-*   $y^{(i)} \in \R^{n_y}$: is the output label for the $i$th example
 
 ### Logistic Regression as a Neural Network
 
@@ -131,13 +133,14 @@ Now the image itself is composed of three color filteres, red, blue, and green. 
 
 <img src="Neural_Network_and_Deep_Learning.assets/IMG_DB04E4DEA293-1.jpeg" alt="IMG_DB04E4DEA293-1" style="zoom:50%;" />
 
-Now, the image by itself is a single example. We can convert all the pixel colors, which there are 12,288 of them into a single column vector. This would be our single sample. In other words, we concatenate all the pixel intensities. So, what we have done is to represent a picture by a single vector called the **feature vector** because it has 12,288 features. We represent the dimensions of the features by $n_x = 12288$. 
+Now, the image by itself is a single example. We can convert all the pixel colors, which there are $64 \times 64 \times 3 = 12, 288$  of them into a single column vector. This would be our single sample. In other words, we concatenate all the pixel intensities. So, what we have done is to represent a picture by a single vector called the **feature vector** because it has 12,288 features. We represent the dimensions of the features by $n_x = 12288$. Thus, there are 12, 288 features. 
 
 In binary classfication problem, we take the image and convert that into a feature vector $X$ and predict its corresponding label, $y$, which is either `0` or `1`.  
 
 *   For the logistic regression, a $(x, y)$  represents a single training example with $x \in \R^{n_x}$ and $y \in \{0,1\}$, the corresponding label. 
 
 *   The training set will comprise of $m$ training examples: $[(x^{(1)}, y^{(1)}), (x^{(2)}, y^{(2)}),..., (x^{(m)}, y^{(m)})]$
+    Note that each $x^{(i)}$ is a feature vector with 12, 288 features. 
 
 *   The lowercase $m$ are the number of training examples. 
 
@@ -182,16 +185,20 @@ where $w = [w_0, w_1, ..., w_{n_x}]$ with $w_0 = b$. This is what is typically d
 
 As seen from the above equation, Eq. 4, the logistic regression boils down to determining the parameters $w$ and $b$ such that the predictions $\hat{y}$ are as close to the actual labels, $y$. The determination of how close the predictions are to the actual labels is done by the use of **loss function**. 
 
-The loss function for logistic regression is given by, 
+We could use the RSS as the loss function as we do in linear regression. But this is generally not used because using this in the logisitic regression causes the loss function to be non-convex. A non-convex function is generally hard for GD algorithm to work well. 
+
+The loss function for logistic regression that we use is given by, 
 $$
-\mathcal{L}(\hat{y}, y) = -(ylog \hat{y} + (1-y)log(1-\hat{y}))
+\mathcal{L}(\hat{y}, y) = -[y\ log (\hat{y}) + (1-y)\ log(1-\hat{y})]
 $$
 We can see that this loss function penalizes the predictions that are not close to the actual label. For example, when $y=1$, the second term is zero. The loss function will be small when $\hat{y}$ approaches $1$ else, it will be large. Similarly, when $y=0$, then the first term is zero and the second term is simply $-log(1-\hat{y})$. Again, the loss function is small when $\hat{y}$ approaches 0 else it will be large. 
 
 The loss function is generally defined for a single sample. The **cost function** is defined as the average or the sum of the loss function across all samples. The cost function for logistic regression is defined as, 
 $$
-\mathcal{J}(w,b) = \frac{1}{m}\sum_{i=1}^m\mathcal{L}(\hat{y}, y) = -\frac{1}{m}\sum_{i=1}^m(y^{(i)}log \hat{y}^{(i)} + (1-y^{(i)})log(1-\hat{y}^{(i)}))
+\mathcal{J}(w,b) = \frac{1}{m}\sum_{i=1}^m\mathcal{L}(\hat{y}, y) = -\frac{1}{m}\sum_{i=1}^m(y^{(i)}\ log \hat{y}^{(i)} + (1-y^{(i)})\ log(1-\hat{y}^{(i)}))
 $$
+
+Note that $\hat{y} = f(w, b)$, therefore $\mathcal{J} = f(w, b)$. 
 
 ### Gradient Descent
 
