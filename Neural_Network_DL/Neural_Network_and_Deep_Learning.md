@@ -348,11 +348,44 @@ We now see the use of backpropogation. The backpropogation is used to change the
 
 Logistic regression example we did above was used for one training example. In this section, we expand this to include $m$ training examples. Note that we still have two features $x_1, x_2$ and associated weights, $w_1, w_2$ and the bias, $b$. 
 
-The code for setting this for $m$ examples would be: 
+The code for setting this for $m$ examples. Here the example assumes two features and associated two weights.  
 
-<img src="Neural_Network_and_Deep_Learning.assets/IMG_14FAF1EDB43B-1.jpeg" alt="IMG_14FAF1EDB43B-1" style="zoom:33%;" />
+```python
+def sigma(z):
+    result = 1/(1+math.exp(z))
+    return result
 
-This would be the code for doing one pass through all of the samples. In order to do this multiple times, we will need to write another loop that goes through multiple passes. Another drawback of this code is that the weights are updated for just two features.
+J = 0
+dw1 = 0
+dw2 = 0
+db = 0
+
+
+# We go through each training example: 
+for i in range(len(m)):
+    z[i] = w[i] * x[i] + b
+    a[i] = sigma(z[i])
+    J += -(y[i] * math.log(a[i]) + (1-y[i]) * log(1-a[i]))
+    
+    # Now the updates: 
+    dz[i] = a[i] - y[i]
+    dw1 += x[i] * dz[i]
+    dw2 += x[i] * dz[i]
+    db += dz[i]
+
+# Finally divide everything by m
+J = J/m
+dw1 = dw1 / m
+dw2 = dw2 / m
+db = db / m
+
+# Now we update the weights: 
+w1 = w1 - alpha * dw1
+w2 = w2 - alpha * dw2
+b = b - alpha * db
+```
+
+All of this is done for one pass of the gradient descent. So, we have to encase this code from line 11 to the end in another for loop to run the gradient descent through multiple epochs. 
 
  If we have $n$ features, we will need to write a loop that will update all the weights in a single pass. As you can see there are far too many nested loops to do this quickly. That is where **vectorization** becomes incredibly important. Vectorization allows us to do the same calculations without the need for for loop. 
 
@@ -360,27 +393,87 @@ This would be the code for doing one pass through all of the samples. In order t
 
 Vectorization of code allows us to do computation much faster. This is especially important when we have a lot of data. The vectorization we have seen in the logisitic regression is the computation of the dot product, $z = w^Tx + b$. There are two ways to compute the dot product: using the `for` loop and through vectorization by implementing the `numpy` arrays. 
 
-```python
-# Vectorization version: 
-c = np.dot(w, x) + b
 
-# Non-vectorization version
-for i in range(len(x)):
-    z += w[i]*x[i]
+
+```python
+# Non-vectorized form:
+z = 0
+for i in range(n):
+    z += w[i] * X[i]
 z += b
 ```
 
-If we were to time this, we will see that the difference between vectorization and non vectorization is 300x. Therefore, vectorization is very important in deep learning. 
+This would be really slow. In python the above operation is performed as follows, 
 
-Coming back to our code for logistic regression, we had only used two features. If we used more features, $n$, then we need to use another loop. However, we can make a small change and completely avoid that loop as follows: 
+```python
+z = np.dot(w, X) + b
+```
 
-<img src="Neural_Network_and_Deep_Learning.assets/IMG_3E2402B01494-1.jpeg" alt="IMG_3E2402B01494-1" style="zoom:33%;" />
+Let's see this in action: 
 
-In the next section we will see how we can make the code even more efficient. 
+```python
+import numpy as np
+import time
+
+a = np.random.randn(1000000)
+b = np.random.randn(1000000)
+
+def non_vectorized():
+    start = time.time()
+    z = 0
+    for i in range(len(a)):
+        z += a[i] * b[i]
+    end = time.time()
+    return end - start
+
+def vectorized():
+    start = time.time()
+    z = np.dot(a, b)
+    end = time.time()
+    return end - start
+
+if __name__ == '__main__':
+    nv = []
+    v = []
+    for i in range(100):
+        nv.append(non_vectorized())
+        v.append(vectorized())
+    print("Average Non-vectorized: ", np.mean(nv))
+    print("Average Vectorized: ", np.mean(v))
+```
+
+And here is the response: 
+
+```python
+Average Non-vectorized:  506.9623470306397
+Average Vectorized:  6.353855133056641
+```
+
+The total time taken is in milliseconds. We see that the vectorized form is nearly 100 times faster than the non-vectorized version. 
+
+Therefore, it is important to vectorize your code when working with deep learning. Another advantage of vectorization is that the good can be parallelized and will run much faster when working with GPUs. The CPUs can also do this, GPUs are designed to make the calculations parallel. 
+
+>   When possible avoid explicit for loops
+
+Let's look at another example. Suppose, you have the following product: 
+$$
+u = exp(v)
+$$
+Here, $v$ is a n-dimensional vector. So, in order to carry out this operation, we will need to use a for loop and store the information in an array. It would be something like this: 
+
+```python
+# Non-vectorized form
+u = []
+for i in range(len(v)):
+    u.append(math.exp(v[i]))
+  
+# Vectorized form:
+u = np.exp(v)
+```
 
 ### Vectorizing Logistic Regression
 
-Having sold one part of the problem to remove a for loop, we attempt to remove the second for loop that runs through all of the $m$ examples. 
+Having solved one part of the problem to remove a for loop, we attempt to remove the second for loop that runs through all of the $m$ examples. 
 
 Now, note that in the equation, 
 $$
@@ -394,13 +487,13 @@ So, we have $m$ samples or observations. There are a total of $n_x$ features. Th
 $$
 Z = W^TX + B
 $$
-where $X$ is a matrix $X \in \R^{n_x \times m}$, $W$ is a column vector, $W \in \R^{n_x \times 1}$ and $B$ is a column vector, $B \in \R^{1 \times 1}$.  Equation 16 then corresponds to a matrix multiplication with a vector and addition with a scalar. 
+where $X$ is a matrix $X \in \R^{n_x \times m}$, $W$ is a column vector, $W \in \R^{n_x \times 1}$ and $B$ is a column vector, $B \in \R^{1 \times 1}$.  Equation 18 then corresponds to a matrix multiplication with a vector and addition with a scalar. 
 
 So, we go from, 
 
 <img src="Neural_Network_and_Deep_Learning.assets/IMG_F75A99A9E8DE-1.jpeg" alt="IMG_F75A99A9E8DE-1" style="zoom:33%;" />
 
-To this, 
+To this, which is taking a transpose of $w$: 
 
 <img src="Neural_Network_and_Deep_Learning.assets/IMG_1BC51208FE92-1.jpeg" alt="IMG_1BC51208FE92-1" style="zoom:33%;" />
 
@@ -408,13 +501,13 @@ Note that $b$ is a single element but through **broadcasting** in Python, it is 
 
 <img src="Neural_Network_and_Deep_Learning.assets/IMG_3DFEBB8DFE2C-1.jpeg" alt="IMG_3DFEBB8DFE2C-1" style="zoom:33%;" />
 
-In python this operation is performed as follows, 
+We would then write the equation 18 in python as: 
 
 ```python
-z = np.dot(w.T, X) + b
+z = np.dot(W.T, X) + b
 ```
 
-That it. This gives us all the $z$ values across all the samples. Similarly, the prediction, $a$ can be computed as: 
+That's it. This gives us all the $z$ values across all the samples. Similarly, the prediction, $a$ can be computed as: 
 
 ```python
 a = 1/(1 + np.exp(-z))
@@ -448,13 +541,17 @@ With that we can write the python code as follows,
 
 ```python
 J = 0, dw = np.zeros(n,1)
+
 # Forward Propogation: 
 Z = np.dot(w.T, X) + b
 A = 1/(1 + np.exp(Z))
+
 # Back Propogation: 
 dz = A - Y
 dw = 1/m(np.dot(X, dz.T))
 db = 1/m(np.sum(dz))
+
+# Gradient Descent update
 w = w - alpha * dw
 b = b - alpha * db
 ```
@@ -518,13 +615,71 @@ So, one thing is clear. How did we divide a $3 \times 4$ matrix with a $1 \times
 >   *   If you have a matrix with dimensions, $(m, n)$ and do any mathematical operation with a $(1, n)$ matrix or with $(m, 1)$ matrix, you will get a $(m, n)$ matrix
 >   *   If you have a matrix with dimension $(m, 1)$ (or a $(1, m)$) and do a mathematical operation with a scalar, you will end with a $(m, 1)$ or $(1, m)$ matrix. 
 
+### Numpy Vectors
 
+Broadcasting can be confusing at times. So, let's see how we can avoid this confusion. 
+
+Consider the following example: 
+
+```python
+import numpy as np
+
+a = np.random.randn(5)
+```
+
+This creates a vector with 5 randomly generated values: 
+
+```python
+array([-1.02353477, -0.0083769 ,  0.4808782 , -2.23798533,  0.85900304])
+```
+
+If you look at the shape of this vector, you will find: 
+
+```python
+a.shape
+(5,)
+```
+
+This is neither a column or a row. So, doing a transpose will have no effect on this vector. So, it is important not to use such a data structure. Instead, use the following: 
+
+```python
+b = np.random.randn(5, 1)
+```
+
+This gives us a column vector. The shape agrees with what we created: 
+
+```python
+b.shape
+
+(5, 1)
+```
+
+And this is how it looks: 
+
+```python
+array([[-0.15191493],
+       [ 1.08354514],
+       [ 0.21466363],
+       [ 1.32826618],
+       [ 0.57910842]])
+```
+
+Doing a transpose now works: 
+
+```python
+b.T
+array([[-0.15191493,  1.08354514,  0.21466363,  1.32826618,  0.57910842]])
+```
+
+In short, make sure to explicitly state the right dimension of a vector. In other words, commit to creating a row or a column vector explicitly. 
+
+You can also use `.reshape()` to convert a vector into a form you want. 
 
 ### Quiz: Week 2
 
 1.  What does a neuron compute in logistic regression? 
 
-2.  What is the logistic loss function? 
+2.  What is the logistic regression loss function? 
 
 3.  Give me an example of `.reshape()` where we have 4 elements in a column
 
