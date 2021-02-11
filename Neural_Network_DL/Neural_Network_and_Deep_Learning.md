@@ -675,6 +675,10 @@ In short, make sure to explicitly state the right dimension of a vector. In othe
 
 You can also use `.reshape()` to convert a vector into a form you want. 
 
+### Python Basics with Numpy Lab
+
+
+
 ### Quiz: Week 2
 
 1.  What does a neuron compute in logistic regression? 
