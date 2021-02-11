@@ -217,7 +217,9 @@ $$
 w_{update} = w_{old} - \alpha\frac{\partial\mathcal{J}}{\partial w} \\[15pt]
 b_{update} = b_{old} - \alpha\frac{\partial\mathcal{J}}{\partial b}
 $$
-And this is run for all the samples. Let's consider the simple case, 1D and see what happens. Consider the figure below: 
+>   This is a vectorized form. So, all the features are updated at the same time when we go through each iteration. The above is run multiple times until convergence. 
+
+ Let's consider the simple case, 1D and see what happens. Consider the figure below: 
 
 ![IMG_EAC647EED6E9-1](Neural_Network_and_Deep_Learning.assets/IMG_EAC647EED6E9-1.jpeg)
 
@@ -247,6 +249,10 @@ We can illustrate this calculation as follows:
 
 <img src="Neural_Network_and_Deep_Learning.assets/IMG_76F34D2639CF-1.jpeg" alt="IMG_76F34D2639CF-1" style="zoom:50%;" />
 
+The computation graph comes in handy when you wish to optimize an output variable such as $J$ in the case. In the case of logistic regression $J$ is the cost function that we are trying to minimize. 
+
+What we see here is that from left-to-right pass, we compute the value of $J$ and as we will see in the next few steps, the right-to-left pass, we compute the derivatives. 
+
 The backward propogation is starting from the right and going left which involves the use of derivatives. 
 
 Let's look at various derivatives: 
@@ -259,7 +265,7 @@ $$
 
 >   The backpropogation consists of taking the derivative going back, e.g., taking the derivative of $J$ w.r.t. $v$ results in doing a backpropogation of 1 step. Taking a derivative of $J$ w.r.t. $u$ corresponds to doing a backpropogation of 2 steps and so on. 
 
-When it comes to converting these calculations to code, we wish to simply the notations. The notation we will use are the following: 
+When it comes to converting these calculations to code, we wish to simplify the notations. The notation we will use are the following: 
 
 *   For derivative for the final output variable, such as the cost function, $J$,  with respect to a given variable, such as $u$ or $v$ or others, we will simply use `d<var>`. 
 
@@ -285,7 +291,19 @@ The above are the set of equations for 1 sample. Let's create a computation grap
 
 <img src="Neural_Network_and_Deep_Learning.assets/IMG_BA8CA07B1F17-1.jpeg" alt="IMG_BA8CA07B1F17-1" style="zoom:50%;" />
 
-In this case, the model has three parameters, $w_1, w_2, b$. Through backpropogation, we can modify these parameters such that the loss function $\mathcal{L}(a, y)$ is minimized. So, let's compute the derivative of the loss function with respect to these parameters: 
+In this case, the model has three parameters, $w_1, w_2, b$. Through backpropogation, we wish to modify the features weights such that the loss function $\mathcal{L}(a, y)$ is minimized. So, we have the following relationships for the feature weights: 
+$$
+dw_1 = \frac{\partial \mathcal{L}}{\partial w_1} = \frac{\partial \mathcal{L}}{\partial a}\frac{\partial a}{\partial z}\frac{\partial z}{\partial w_1} \\[15pt]
+
+dw_2 = \frac{\partial \mathcal{L}}{\partial w_2} = \frac{\partial \mathcal{L}}{\partial a}\frac{\partial a}{\partial z}\frac{\partial z}{\partial w_2} \\[15pt]
+
+db = \frac{\partial \mathcal{L}}{\partial b} = \frac{\partial \mathcal{L}}{\partial a}\frac{\partial a}{\partial z}\frac{\partial z}{\partial b} \\[15pt]
+
+dz = \frac{\partial \mathcal{L}}{\partial z} = \frac{\partial \mathcal{L}}{\partial a}\frac{\partial \mathcal{a}}{\partial z}
+$$
+These are the main equations that connect the loss function, $\mathcal{L}(a, y)$ with the weights, $w_i$, $w_2$ and the intercept, $b$.  
+
+So, let's compute the derivative of the loss function with respect to these parameters: 
 
 <img src="Neural_Network_and_Deep_Learning.assets/IMG_17B69BA0E35D-1.jpeg" alt="IMG_17B69BA0E35D-1" style="zoom:33%;" />
 
@@ -303,12 +321,12 @@ Finally, the last derivative in the chain:
 
 Which then comes out to be the product of individual results. We can for now write this as a shorthand notation: 
 $$
-\frac{\partial \mathcal{L}}{\partial w_1} = \frac{\partial \mathcal{L}}{\partial z}\frac{\partial z}{\partial w_1} = x_1dz
+\frac{\partial \mathcal{L}}{\partial w_1} = dw_1 = \frac{\partial \mathcal{L}}{\partial z}\frac{\partial z}{\partial w_1} = x_1dz
 $$
 Similarly, we have: 
 $$
-\frac{\partial \mathcal{L}}{\partial w_2} = \frac{\partial \mathcal{L}}{\partial z}\frac{\partial z}{\partial w_2} = x_2dz \\[15pt]
-\frac{\partial \mathcal{L}}{\partial b} = \frac{\partial \mathcal{L}}{\partial z}\frac{\partial z}{\partial b} = 1dz
+\frac{\partial \mathcal{L}}{\partial w_2} = dw_2 = \frac{\partial \mathcal{L}}{\partial z}\frac{\partial z}{\partial w_2} = x_2dz \\[15pt]
+\frac{\partial \mathcal{L}}{\partial b} = db = \frac{\partial \mathcal{L}}{\partial z}\frac{\partial z}{\partial b} = 1dz
 $$
 We can of course compute $dz$ as, 
 
@@ -319,10 +337,12 @@ We can of course compute $dz$ as,
 And therefore, the updates will be: 
 $$
 dz = a - y \\[15pt]
-w_{1updated} = w_1 -\alpha(x_1dz) \\[15pt] 
-w_{2updated} = w_2 -\alpha(x_2dz) \\[15pt]
-b_{updated} = b -\alpha(dz) \\[15pt]
+w_{1updated} = w_1 - \alpha \left(\frac{\partial \mathcal{L}}{\partial w_1}\right)= w_1 -\alpha(x_1dz) = w_1 - \alpha x_1(a-y)\\[15pt] 
+w_{2updated} =  w_2 - \alpha \left(\frac{\partial \mathcal{L}}{\partial w_2}\right) = w_2 -\alpha(x_2dz) = w_2 - \alpha w_2(a-y)\\[15pt]
+b_{updated} = b -\alpha(dz) = b - \alpha (a-y)\\[15pt]
 $$
+
+We now see the use of backpropogation. The backpropogation is used to change the feature weights in order to reduce the cost function. 
 
 ### Logistic Regression Gradient Descent ($m$ Training Example)
 
@@ -332,11 +352,13 @@ The code for setting this for $m$ examples would be:
 
 <img src="Neural_Network_and_Deep_Learning.assets/IMG_14FAF1EDB43B-1.jpeg" alt="IMG_14FAF1EDB43B-1" style="zoom:33%;" />
 
-This would be the code for doing one pass through all of the samples. In order to do this multiple times, we will need to write another loop that goes through multiple passes. Another drawback of this code is that the weights are updated for just two features. If we have $n$ features, we will need to write a look that will update all the weights in a single pass. As you can see there are far too many nested loops to do this quickly. That is where **vectorization** becomes incredibly important. Vectorization allows us to do the same calculations without the need for for loop. 
+This would be the code for doing one pass through all of the samples. In order to do this multiple times, we will need to write another loop that goes through multiple passes. Another drawback of this code is that the weights are updated for just two features.
+
+ If we have $n$ features, we will need to write a loop that will update all the weights in a single pass. As you can see there are far too many nested loops to do this quickly. That is where **vectorization** becomes incredibly important. Vectorization allows us to do the same calculations without the need for for loop. 
 
 ### Vectorization
 
-Vectorization of code allows us to do computation much faster. This is especially important when we have a lot of data. The vectorization we have seen in the logisitic regression is the computation of the dot product, $z = w^tx + b$. There are two ways to compute the dot product: using the `for` loop and through vectorization by implementing the `numpy` arrays. 
+Vectorization of code allows us to do computation much faster. This is especially important when we have a lot of data. The vectorization we have seen in the logisitic regression is the computation of the dot product, $z = w^Tx + b$. There are two ways to compute the dot product: using the `for` loop and through vectorization by implementing the `numpy` arrays. 
 
 ```python
 # Vectorization version: 
