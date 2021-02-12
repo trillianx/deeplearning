@@ -677,6 +677,218 @@ You can also use `.reshape()` to convert a vector into a form you want.
 
 ### Python Basics with Numpy Lab
 
+#### Sigmoid Function
+
+Let's build the sigmoid function
+
+```python
+# Basic function
+
+def basic_sigmoid(x):
+    s = 1/(1 + math.exp(-x))
+    return s
+```
+
+We hardly use `math` package in deep learning because the the above function expects a single value. When working in deep learning, often we pass an array. Passing an array in the above function results in type error. 
+
+Let's implement a sigmoid function using Numpy
+
+```python
+# Function using Numpy
+
+def sigmoid(x):
+    s = 1/(1 + np.exp(-x))
+    return s
+```
+
+This function can take an array. For example, 
+
+```python
+x = np.array([1, 2, 3])
+sigmoid(x)
+
+array([ 0.73105858,  0.88079708,  0.95257413])
+```
+
+#### Gradient of Sigmoid
+
+The gradient of the sigmoid is given by, 
+$$
+\sigma^{'}(x) = \sigma(x)(1 - \sigma(x))
+$$
+
+```python
+# Gradient of Sigmoid Function
+
+def sigmoid_derivative(x):
+    """
+    Compute the gradient (also called the slope or derivative) of the sigmoid
+    function with respect to its input x.
+    You can store the output of the sigmoid function into variables and then use
+    it to calculate the gradient.
+    
+    Arguments:
+    x -- A scalar or numpy array
+
+    Return:
+    ds -- Your computed gradient.
+    """
+    s = sigmoid(x)
+    ds = s*(1-s)
+    return ds
+    
+```
+
+#### Reshaping Arrays
+
+Two common numpy functions used in deep learning are:
+
+*    `np.shape` used to get the shape of an array 
+*   `np.reshape()` used to reshape an array into some other dimensions
+
+Implement `image2vector()` that takes an input of shape (l, h, 3) and returns a vector of shape (l\*h\*3, 1). 
+
+```python
+def image2vector(image):
+    """
+    Argument:
+    image -- a numpy array of shape (length, height, depth)
+    
+    Returns:
+    v -- a vector of shape (length*height*depth, 1)
+    """
+    length = image.shape[0]
+    height = image.shape[1]
+    depth = image.shape[2]
+    v = image.reshape(length * height * depth, 1)
+    return v
+```
+
+#### Normalizing Rows
+
+Normalization of vectors is performed by dividing the components of the vector by its norm. So, given a matrix, 
+
+<img src="Neural_Network_and_Deep_Learning.assets/image-20210211145445353.png" alt="image-20210211145445353" style="zoom:80%;" />
+
+The normalized matrix will have the following form: 
+
+<img src="Neural_Network_and_Deep_Learning.assets/image-20210211145515608.png" alt="image-20210211145515608" style="zoom:80%;" />
+
+Where each element in the above matrix was divided by the norm, $||x|| = 5/\sqrt{56}$. 
+
+Let's implement `normalizeRows()` function to normalize the rows of a matrix. 
+
+```python
+def normalizeRows(x):
+    """
+    Implement a function that normalizes each row of the matrix x (to have unit
+    length).
+    
+    Argument:
+    x -- A numpy matrix of shape (n, m)
+    
+    Returns:
+    x -- The normalized (by row) numpy matrix. You are allowed to modify x.
+    """
+    x_norm = np.linalg.norm(x, axis=1, keepdims=True)
+    x_normalized = x / x_norm
+    return x_normalized
+```
+
+#### Softmax Function
+
+Implement a softmax function using numpy. You can think of softmax as a normalizing function used when your algorithm needs to classify two or more classes. You will learn more about softmax in the second course of this specialization.
+
+**Instructions**:
+
+<img src="Neural_Network_and_Deep_Learning.assets/image-20210211150629628.png" alt="image-20210211150629628" style="zoom:150%;" />
+
+```python
+def softmax(x):
+    """Calculates the softmax for each row of the input x.
+
+    Your code should work for a row vector and also for matrices of shape (m,n).
+
+    Argument:
+    x -- A numpy matrix of shape (m,n)
+
+    Returns:
+    s -- A numpy matrix equal to the softmax of x, of shape (m,n)
+    """
+    
+    x_exp = np.exp(x)
+
+    # Create a vector x_sum that sums each row of x_exp. 
+    # Use np.sum(..., axis = 1, keepdims = True).
+    x_sum = np.sum(x_exp, axis=1, keepdims=True)
+    
+    # Compute softmax(x) by dividing x_exp by x_sum. It should automatically 
+    # use numpy broadcasting.
+    s = x_exp/x_sum
+
+    ### END CODE HERE ###
+    
+    return s
+```
+
+**What you need to remember:**
+
+*   `np.exp(x)` works for any `np.array(x)` and applies the exponential function to every coordinate
+*   the sigmoid function and its `gradientimage2vector()` is commonly used in deep learning
+*   `np.reshape` is widely used. In the future, you'll see that keeping your matrix/vector dimensions straight will go toward eliminating a lot of bugs. 
+*   numpy has efficient built-in functions
+*   broadcasting is extremely useful
+
+#### Implement L1 and L2 loss functions
+
+Let's implement regularization functions using lumpy: 
+
+```python
+def L1(yhat, y):
+    """
+    Arguments:
+    yhat -- vector of size m (predicted labels)
+    y -- vector of size m (true labels)
+    
+    Returns:
+    loss -- the value of the L1 loss function defined above
+    """
+    loss = np.sum(np.abs(y-yhat))
+    
+    return loss
+```
+
+So, if we are given, 
+
+```python
+yhat = np.array([.9, 0.2, 0.1, .4, .9])
+y = np.array([1, 0, 0, 1, 1])
+print("L1 = " + str(L1(yhat,y)))
+
+1.1
+```
+
+Let's implement L2 norm: 
+
+```python
+def L2(yhat, y):
+    """
+    Arguments:
+    yhat -- vector of size m (predicted labels)
+    y -- vector of size m (true labels)
+    
+    Returns:
+    loss -- the value of the L2 loss function defined above
+    """
+    loss = np.sum((y - yhat)**2)
+    
+    return loss
+```
+
+
+
+
+
 
 
 ### Quiz: Week 2
