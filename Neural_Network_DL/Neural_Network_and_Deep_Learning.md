@@ -1046,20 +1046,28 @@ Let's look at the activation functions in the hidden layers:
 
 <img src="Neural_Network_and_Deep_Learning.assets/image-20210214105937454.png" alt="image-20210214105937454" style="zoom:80%;" />
 
-We can write each of these activations in the hidden layer as follows: 
+>    The difference between a neural network with one neuron and multiple neurons is that the same calculation is perfomed multiple times. 
+
+The convention followed is: 
+
+<img src="Neural_Network_and_Deep_Learning.assets/image-20210214135515865.png" alt="image-20210214135515865" style="zoom:80%;" />
+
+We can write operations and activations in the hidden layer as follows: 
 $$
 Z^{[1]}_1 = w^{[1]T}_1x + b^{[1]}_1; \ a^{[1]}_1 = \sigma(Z^{[1]}_1) \\[15 pt]
 Z^{[1]}_2 = w^{[1]T}_2x + b^{[1]}_2; \ a^{[1]}_2 = \sigma(Z^{[1]}_2) \\[15 pt]
 Z^{[1]}_3 = w^{[1]T}_3x + b^{[1]}_3; \ a^{[1]}_3 = \sigma(Z^{[1]}_3) \\[15 pt]
 Z^{[1]}_4 = w^{[1]T}_4x + b^{[1]}_4; \ a^{[1]}_4 = \sigma(Z^{[1]}_4) \\[15 pt]
 $$
-So, we see that the two computations are done for each neuron in the hidden layer. Thus the activation $a^{[1]}$ will have 4 rows corresponding to the $Z$ and $a$. In other words, we will write this as,
+So, we see that the two computations are done for each neuron in the hidden layer. The first layer is associated with the square brackets for the weight vector, the intercept vector, and the activation function $\sigma(Z^{{[1]}}_1)$ all corresponding to the first neuron. We then do the same for each of the other neurons. 
+
+Thus the activations for the first hidden layer, $a^{[1]}$ will have 4 rows corresponding to the $Z$ and $a = \sigma(Z)$. In other words, we will write this as,
 $$
 a^{[1]} = \begin{bmatrix} 
-Z^{[1]}_1\\
-Z^{[1]}_2\\
-Z^{[1]}_3 \\
-Z^{[1]}_4 \\
+ a^{[1]}_1\\
+ a^{[1]}_2\\
+ a^{[1]}_3 \\
+ a^{[1]}_4 \\
 \end{bmatrix}
 $$
 The convention is a little screwed up here, but the computation of $Z^{[l]}_i$ is done in the following way: 
@@ -1074,3 +1082,33 @@ Similarly, the intercept matrix is a $(4,1)$ is because each element corresponds
 
 The above matrix multiplication results in the activations $a^{[1]}$ which has a dimension of $(4,1)$. When this activations pass through the sigmoid function, we have the same dimension. 
 
+We can write all of the above four equation in terms of: 
+
+<img src="Neural_Network_and_Deep_Learning.assets/image-20210214140208091.png" alt="image-20210214140208091" style="zoom:80%;" />
+
+Here: 
+$$
+a^{[0]} = X
+$$
+This is the input vector of dimensions $(3, 1)$. 
+
+We now move to the second layer. In this case, we will have: 
+
+ <img src="Neural_Network_and_Deep_Learning.assets/image-20210214140652866.png" alt="image-20210214140652866" style="zoom:80%;" />
+
+This second layer can be thought of as a single neuron: 
+
+<img src="Neural_Network_and_Deep_Learning.assets/image-20210214141004015.png" alt="image-20210214141004015" style="zoom:80%;" />
+
+### Vectorizing Across Multiple Examples
+
+In the previous example, we say how to pass one instance or observation through a neural network. The value $a^{[0]}$ was a vector with three features, $[x_1, x_2, x_3]$ of a given instance. Now we will see how to pass multiple instances. 
+
+In the previous sections, we saw that for a 2-layer neural network, we needed the following set of equations: 
+$$
+Z^{[1]} = W^{[1]}a^{[0]} + B^{[1]} \\[15pt]
+a^{[1]} = \sigma(Z^{[1]}) \\[15pt]
+
+Z^{[2]} = W^{[2]}a^{[1]} + B^{[2]}\\[15pt]
+a^{[2]} = \sigma(Z^{[2]})
+$$
