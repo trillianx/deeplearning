@@ -935,3 +935,142 @@ def L2(yhat, y):
 6.  $(n_x, m)$
 7.  (32 x 32 x 3, 1)
 
+## Week 3: Shallow Neural Network
+
+In this week, we will learn to build a neural network with one hidden layer, using forward propagation and backpropagation. The learning objectives in this week are: 
+
+-   Describe hidden units and hidden layers
+-   Use units with a non-linear activation function, such as tanh
+-   Implement forward and backward propagation
+-   Apply random initialization to your neural network
+-   Increase fluency in Deep Learning notations and Neural Network Representations
+-   Implement a 2-class classification neural network with a single hidden layer
+
+In the previous week, we saw how we can implement logistic regression as a neural network as a binary classification. In this calculations we had the following neural network: 
+
+<img src="Neural_Network_and_Deep_Learning.assets/image-20210214094554492.png" alt="image-20210214094554492" style="zoom:80%;" />
+
+We used the features on the left, which passed through a neuron and output a prediction. If we were to expand all the steps that the neuron took, it would look something like this: 
+
+<img src="Neural_Network_and_Deep_Learning.assets/image-20210214094645812.png" alt="image-20210214094645812" style="zoom:80%;" />
+
+We began with the features vector, the weights vector and the constant vector. The neuron did the following calculations: 
+
+1.  Computed the linear regression value based on feature weights, features, and the intercept
+2.  Computed the:
+    1.  logistic function of this linear regression value using the sigmoid function, this was our prediction. 
+    2.  Computed the loss function based on the prediction and actual label, which was our log loss. 
+
+The above diagram is a scematic presentation of a neural network. What we now wish to introduce is something a little more involved and akin to what you would see. The neural network generally consists of multiple neurons, which look something like this: 
+
+![IMG_B8AF9B0CD9F5-1](Neural_Network_and_Deep_Learning.assets/IMG_B8AF9B0CD9F5-1.jpeg)
+
+You will notice herer at the features not only go through the neurons but there is an interaction that happens between features at each of the neurons. The bunch of neurons right after the input is called the **first layer**. This layer performs the two calculations based on the initial weights and the intercept: 
+
+1.  Computation of $z$
+2.  Computation of $\sigma(z)$
+
+We will denote weights and intercept used in this layer by a superscript value:
+
+![IMG_12DADBA2EC4E-1](Neural_Network_and_Deep_Learning.assets/IMG_12DADBA2EC4E-1.jpeg)
+
+In this case we have two layers. The first layer uses the initial weights and the intercept to calculate $z$ and $\sigma(z)$. The second layer computes $z$ and $\sigma(z)$ based on new weights it has computed from the first layer. 
+
+![IMG_90725955D9C7-1](Neural_Network_and_Deep_Learning.assets/IMG_90725955D9C7-1.jpeg)
+
+The computation is then passed to the loss function. 
+
+The backward propogation happens by going through the second layer first and then going through the first layer.
+
+>   The superscripts square brackets are used to identify the layer while the superscript round brackets are used to identify the $i$th sample. 
+
+### Neural Network Representation
+
+Let's dig deeper and see what a two layer neural network looks like.
+
+<img src="Neural_Network_and_Deep_Learning.assets/image-20210214102723841.png" alt="image-20210214102723841" style="zoom:60%;" />
+
+This 2-layer neural network has the following components: 
+
+*   **Input Layer** - This is the layer where all the features go into the neural network
+*   **Hidden Layer** - This layer is "hidden" from the user. It does the calculations based on the input values
+*   **Output Layer** - This layer is the layer where the loss function is computed and the prediction is given back to the use. 
+
+We will use another set of convention to make our life easier for computation. 
+
+#### Activation
+
+We will use the symbol $a^{l}$ to represent a set of activations. For the input layer the activations look something like this: 
+$$
+a^{[0]} = \begin{bmatrix} 
+x_1\\
+x_2\\
+x_3 \\
+\end{bmatrix}
+$$
+The hidden layer will generate a set of activations based on the input layer. Because there is interaction between weights for each given feature, we will have 4 activation functions: 
+$$
+a^{[1]} = f(w^{[1]},b^{[1]}) = \begin{bmatrix} 
+a^{[1]}_1\\
+a^{[1]}_2\\
+a^{[1]}_3 \\
+a^{[1]}_4 \\
+\end{bmatrix}
+$$
+Finally, we have the activations corresponding to the output layer: 
+$$
+a^{[2]} = f(w^{[2]},b^{[2]})\\
+$$
+What are the dimensions of these activations? In our example, the dimensions would be: 
+
+*   Input Layer: $(3,1)$
+*   Hidden Layer:  is a function of feature weights with dimension (4, 3)  and intercept, (4,1)
+*   Output Layer: is a function of feature weights so the dimension would be (1,4), and the intercept so the output would be (1,1). 
+
+We will go over in the next section about what each of the activations do. 
+
+#### Computing a Neural Network's Output
+
+As we saw in the previous week, the neural network for logistic regression computes two things: 
+
+*   $z = w^T + b$
+*   $a = \sigma(z)$
+
+We represent this as following: 
+
+<img src="Neural_Network_and_Deep_Learning.assets/image-20210214105701818.png" alt="image-20210214105701818" style="zoom:80%;" />
+
+The neural network does this a multiple times. 
+
+Let's look at the activation functions in the hidden layers: 
+
+<img src="Neural_Network_and_Deep_Learning.assets/image-20210214105937454.png" alt="image-20210214105937454" style="zoom:80%;" />
+
+We can write each of these activations in the hidden layer as follows: 
+$$
+Z^{[1]}_1 = w^{[1]T}_1x + b^{[1]}_1; \ a^{[1]}_1 = \sigma(Z^{[1]}_1) \\[15 pt]
+Z^{[1]}_2 = w^{[1]T}_2x + b^{[1]}_2; \ a^{[1]}_2 = \sigma(Z^{[1]}_2) \\[15 pt]
+Z^{[1]}_3 = w^{[1]T}_3x + b^{[1]}_3; \ a^{[1]}_3 = \sigma(Z^{[1]}_3) \\[15 pt]
+Z^{[1]}_4 = w^{[1]T}_4x + b^{[1]}_4; \ a^{[1]}_4 = \sigma(Z^{[1]}_4) \\[15 pt]
+$$
+So, we see that the two computations are done for each neuron in the hidden layer. Thus the activation $a^{[1]}$ will have 4 rows corresponding to the $Z$ and $a$. In other words, we will write this as,
+$$
+a^{[1]} = \begin{bmatrix} 
+Z^{[1]}_1\\
+Z^{[1]}_2\\
+Z^{[1]}_3 \\
+Z^{[1]}_4 \\
+\end{bmatrix}
+$$
+The convention is a little screwed up here, but the computation of $Z^{[l]}_i$ is done in the following way: 
+
+<img src="Neural_Network_and_Deep_Learning.assets/image-20210214113658914.png" alt="image-20210214113658914" style="zoom:80%;" />
+
+#### Getting the Dimension Right
+
+The reason the weights is a $(4, 3)$ matrix is because the each row corresponds to the weights for each of the 4 neurons while each column corresponds to the associated weights of each of three features. 
+
+Similarly, the intercept matrix is a $(4,1)$ is because each element corresponds to the intercept in each of the 4 neurons. 
+
+The above matrix multiplication results in the activations $a^{[1]}$ which has a dimension of $(4,1)$. When this activations pass through the sigmoid function, we have the same dimension. 
+
