@@ -1112,3 +1112,51 @@ a^{[1]} = \sigma(Z^{[1]}) \\[15pt]
 Z^{[2]} = W^{[2]}a^{[1]} + B^{[2]}\\[15pt]
 a^{[2]} = \sigma(Z^{[2]})
 $$
+Now for $m$ training examples, we will repeat the above calculations $m$ times. We will make use of another convention to take into consideration the $m$ training examples. The activations will have the following notation: 
+
+<img src="Neural_Network_and_Deep_Learning.assets/image-20210214142114214.png" alt="image-20210214142114214" style="zoom:80%;" />
+
+With this we are ready to compute the activations across two layers. Typically, we would use a for loop to run through our $m$ training examples. Here's how we may do it: 
+
+<img src="Neural_Network_and_Deep_Learning.assets/image-20210214142606660.png" alt="image-20210214142606660" style="zoom:50%;" />
+
+This would be a non-vectorized way of doing it. It would also be slower than the vectorized here. The good thing is that we can easily vectorize the above. Here's how: 
+
+Note that our $a^{[0]}$ consists of a column vector with 3 features for a given instance. So, we can place our instances as columns in a given matrix, the computation of $W^{[1]}x^{(i)}$ is simply a dot product of a row of $W$ and a column of $x^{(i)}$. Now if $x^{(i)}$ were a matrix, the computation will not change but be the same. This is because a dot product of two matrices is simple a scaler multiplication of a row of one matrix and the column of a second matrix at a given time. 
+
+Thus we can can write the vectorized form of the above equation as: 
+
+<img src="Neural_Network_and_Deep_Learning.assets/image-20210214143632462.png" alt="image-20210214143632462" style="zoom:80%;" /> 
+
+Where $X$ has the dimension of $(n, m)$, where there are $n$ features and $m$ instances. So, the dimensions of the matrices would be: 
+
+<Add dimensions here> 
+
+### Activation Function
+
+The sigmoid function that we have used so far is called an **activation function**. However, an activation does not have to be a sigmoid function. For example, one example of activation function is **tanh(z)**. This is given bym 
+$$
+tanh(z) = \frac{e^{z} - e^{-z}}{e^{z} + e^{-z}}
+$$
+The form of this activation function is similar to sigmoid function with the exception that it ranges from -1 to 1. 
+
+<img src="Neural_Network_and_Deep_Learning.assets/image-20210214154738818.png" alt="image-20210214154738818" style="zoom:80%;" />
+
+The tanh function can be thought of as a sigmoid function that is shifted by 0.5. In general the tanh function works really well for the hidden layers in a neural network. 
+
+In a given neural network we can have a combination of activation functions. For example, for one layer can have a ReLU function while the other layer can have a tanh function. 
+
+Both activation functions discussed so far have a shortcoming. Because they approach their limits, the Gradient Descent takes a very long time to converge. Therefore, the ReLU function is better suited as an activation function. The ReLU function is either linear or equal to zero. This helps the GD converge very quickly as the slope of ReLU is different from zero. 
+
+A version of ReLU is a **leaky ReLU**, which is not often used. 
+
+<img src="Neural_Network_and_Deep_Learning.assets/image-20210214155824212.png" alt="image-20210214155824212" style="zoom:80%;" />
+
+We choose the activation function based on what the output should be. If the output needs to be between 0 and 1, then choose a sigmoid function. But for all hidden layers, choose the ReLU function. 
+
+>   Use the sigmoid function for the output layer and use the tanh and ReLU for hidden layers. This is when you wish the output to be between 0 and 1. 
+
+### Why we need non-linear Activation Function? 
+
+
+
