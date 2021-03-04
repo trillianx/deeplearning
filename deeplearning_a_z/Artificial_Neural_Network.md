@@ -212,3 +212,227 @@ Let's go through the steps taken to train a neural network:
     1.  Update the weights after each observation (Reinforcement Learning). 
     2.  Update the weights only after a batch of observations (Batch Learning)
 7.  When the whole training set passed through ANN, that makes an epoch. Redo more epochs. 
+
+## Building an Artificial Neural Network
+
+In this section we will apply what we have learned so far to a business problem. We will use the data from the [following tables](https://drive.google.com/drive/folders/1qQtf6BbMd4yuIU1acBXqyZh1rNpR6GaK). 
+
+We have the features about the customers from a bank. The output variable is the last column. It is a binary variable. Suppose the time period over which the data was received was 6 months. Based on this information, the bank wants to know whether a given customer is at risk of leaving the bank or not. 
+
+We will do all the work in Google Colab.
+
+```python
+import pandas as pd
+import numpy as np
+import tensorflow as tf
+```
+
+The important library we will use is the TensorFlow Library. You can check the version of the tensflow using, `tf.__version__`
+
+Now let's get the data: 
+
+```python
+path_to_file = "https://raw.githubusercontent.com/trillianx/deeplearning/main/deeplearning_a_z/Data/ANN/Python/Churn_Modelling.csv"
+
+df = pd.read_csv(path_to_file)
+df.head()
+```
+
+<img src="Artificial_Neural_Network.assets/image-20210303161508807.png" alt="image-20210303161508807" style="zoom:150%;" />
+
+Now that we have the data, we can start with ML pipeline. 
+
+### Part 1: Data Preprocessing
+
+We start with the features and the target variable we need to include. 
+
+```python
+# Separate the features and the target variable
+X = df.iloc[:, 3:-1].values
+y = df.iloc[:, -1].values
+```
+
+We removed the first three columns because `RowNumber`, `CustomerId`, and `Surname` do not add any information. 
+
+The `X` and `y` can be seen here: 
+
+<img src="Artificial_Neural_Network.assets/image-20210303165205053.png" alt="image-20210303165205053" style="zoom:50%;" />
+
+<img src="Artificial_Neural_Network.assets/image-20210303165221262.png" alt="image-20210303165221262" style="zoom:50%;" />
+
+Next step is to encode the categorical data. There are two columns, `Gender` and `Geography`. We do it in the following way. 
+
+```python
+from sklearn.preprocessing import LabelEncoder
+le = LabelEncoder()
+X[:, 2] = le.fit_transform(X[:, 2])
+```
+
+We can print and see how it looks: 
+
+<img src="Artificial_Neural_Network.assets/image-20210303165612591.png" alt="image-20210303165612591" style="zoom:50%;" />
+
+We see that the gender is now gone and is replaced by a binary value. 
+
+As there is no relationship between countries in the geography, we will use `OneHotEncoding`:
+
+```python
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import OneHotEncoder
+ct = ColumnTransformer(transformers=[('encoder', OneHotEncoder(), [1])], remainder='passthrough')
+X = np.array(ct.fit_transform(X))
+```
+
+This results in the following table: 
+
+<img src="Artificial_Neural_Network.assets/image-20210303170028978.png" alt="image-20210303170028978" style="zoom:50%;" />
+
+We see that the one hot encoding has done encoding for the three countries we have in the data: 
+
+```python
+print(df.Geography.unique())
+
+array(['France', 'Spain', 'Germany'], dtype=object)
+```
+
+Comparing the countries in the previous image, we can see that France is given (1, 0, 0) while Spain is given (0, 0, 1) and Germany (0, 1, 0). 
+
+The next step would be to split the data into training and testing. 
+
+```python
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+```
+
+The net thing we will work on is feature scaling. This is very important to be done. 
+
+```python
+from sklearn.preprocessing import StandardScaler
+sc = StandardScaler()
+X_train = sc.fit_transform(X_train)
+```
+
+This is how the `X_train` looks like: 
+
+<img src="Artificial_Neural_Network.assets/image-20210303170721710.png" alt="image-20210303170721710" style="zoom:50%;" />
+
+### Part 2: Building Artificial Neural Network
+
+The building part will be done in 4 steps. So, let's get to it. 
+
+#### Initialize the Artificial Neural Network
+
+We start by creating an instance of sequential class. 
+
+```python
+ann = tf.keras.models.Sequential()
+```
+
+#### Add the Input Layer and First Hidden Layer
+
+To add a layer to an ANN, we make use of the `layers` module and the `Dense()` class. The `Dense()` class takes the argument as `units`. The `units` are the number of neurons that we need. 
+
+There is no easy answer about the number of neurons we need. We start with a guess. Another would be to take the number equal to the number of features. But this is a hyperparameter, which we can tune to get better accuracy. 
+
+```python
+ann.add(tf.keras.layers.Dense(units=6, activation='relu'))
+```
+
+This creates the first hidden layer. 
+
+#### Adding the Second Hidden Layer
+
+Adding new layers is pretty easy as copying the same above code: 
+
+```python
+ann.add(tf.keras.layers.Dense(units=6, activation='relu'))
+```
+
+#### Adding the Output Layer
+
+Adding an output layer is slightly different: 
+
+```python
+ann.add(tf.keras.layers.Dense(units=1, activation='sigmoid'))
+```
+
+Note that if we had an output that had 3 categories, we would then need 3 neurons. This is because when there are three categories, the `OneHotEncoding`, the output will be a combination of (1, 0, 0). 
+
+Finally, we need `sigmoid` activation function that outputs a value between 0 and 1. So, we use the `sigmoid`. If you have more categories we use `softmax` instead of `sigmoid`
+
+### Step 3: Training the Artificial Neural Network
+
+To train the ANN, we will need to pick a loss function, the optimizer to find the minimum of the cost function, and the metric. 
+
+```python
+ann.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+```
+
+As we have seen in the theory, we use the optimizer the SGD. This is given by `adam`. For binary classification we use the loss function is `binary_crossentropy` when we have more categories, we use `category_crossentropy`. 
+
+Now that we have compiled our model, we will train the model on our training. 
+
+```python
+ann.fit(X_train, y_train, batch_size=32, epochs=100)
+```
+
+The `batch_size` is a hyperparameter but as default we take it as `32`. 
+
+The output looks something like this: 
+
+![image-20210303173248734](Artificial_Neural_Network.assets/image-20210303173248734.png)
+
+We see that the accuracy for this model is about 86%. 
+
+### Step 4: Making the Predictions and Evaluating the Model
+
+Here's how we predict. However, note that in order to predict, we need to use of test observation in the same format as we had our original set. So, we need to do `OneHotEncoding` on categorical variables, `LabelEncoding` on gender and finally standard scaling on all of the data. 
+
+```python
+single_prediction = [[1, 0, 0, 600, 1, 40, 3, 60000, 2, 1, 1, 50000]]
+sp_transform = sc.transform(single_prediction)
+ann.predict(sp_transform)
+```
+
+This gives us, 
+
+```python
+array([[0.03608271]], dtype=float32)
+```
+
+So, we see that the predicted probability of the customer leaving is 3.6%. So, the person is unlikely to leave. 
+
+We can get `True` or `False` if we use the following: 
+
+```python
+ann.predict(sp_transform) > 0.5 
+```
+
+This returns: 
+
+```python
+array([[False]])
+```
+
+### Step 5. Predicting the Test set Results
+
+Now that we have done so with an example, let's make predictions with the test set to see how good the model has done. 
+
+```python
+X_test = sc.transform(X_test)
+y_pred = ann.predict(X_test)
+y_pred_bol = (y_pred > 0.5)
+# Convert and reshape the vector
+y_pred_final = (0 + y_pred_bol)
+y_pred_final = y_pred_final.reshape(len(y_pred_final), 1)
+y_test = y_test.reshape(len(y_test), 1)
+```
+
+To see how the model did, we will create a confusion matrix: 
+
+```python
+from sklearn.metrics import confusion_matrix, accuracy_score
+cm = confusion_matrix(y_test, y_pred)
+accuracy_score(y_test, y_pred)
+```
+

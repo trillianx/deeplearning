@@ -26,3 +26,5 @@ This is called a deep learning when we include multiple hidden layer. This is so
 
 <img src="Deep_Learning_notes.assets/image-20210303092239995.png" alt="image-20210303092239995" style="zoom:80%;" />
 
+The material to the class can be found [here](https://www.tfcertification.com/pages/deep-learning)
+
