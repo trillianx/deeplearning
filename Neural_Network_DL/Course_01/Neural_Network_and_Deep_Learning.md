@@ -931,10 +931,6 @@ def L2(yhat, y):
 
 
 
-
-
-
-
 ### Quiz: Week 2
 
 1.  What does a neuron compute in logistic regression? 
@@ -1027,6 +1023,282 @@ def L2(yhat, y):
      $$
      
 
+### DL Lab Week 2
+
+In the lab this week we implemented a NN for identifying whether a photo is that of a cat or not. We made use of the logisitic regression and the sigmoid activation function. These were done in separate steps and were then added together in a single function. Let's dive down to these in more detail. 
+
+For this lab, the mathematics behind running a NN for a single instance, $x^{(i)}$ is the following: 
+
+<img src="Neural_Network_and_Deep_Learning.assets/image-20210310085525261.png" alt="image-20210310085525261" style="zoom:50%;" />
+
+Once the above are computed for all training examples, we would then take the mean of the cost functions. 
+
+#### Building the Part NN
+
+The main steps for building a NN are:
+
+1.  Define the model structure (such as number of input features)
+2.  Initialize the model's parameters
+3.  Loop:
+    1.  Calculate current loss (forward propagation)
+    2.  Calculate current gradient (backward propagation)
+    3.  Update parameters (gradient descent)
+
+We start by first creating helper functions. 
+
+##### Helper Functions
+
+The activation function we will use is the sigmoid: 
+
+```python
+def sigmoid(z):
+    """
+    Compute the sigmoid of z
+
+    Arguments:
+    z -- A scalar or numpy array of any size.
+
+    Return:
+    s -- sigmoid(z)
+    """
+    s = 1/(1 + np.exp(-z))
+    
+    return s
+```
+
+##### Initialize the Parameters
+
+We initialize the weights and the bias: 
+
+```python
+def initialize_with_zeros(dim):
+    """
+    This function creates a vector of zeros of shape (dim, 1) for w and initializes b to 0.
+    
+    Argument:
+    dim -- size of the w vector we want (or number of parameters in this case)
+    
+    Returns:
+    w -- initialized vector of shape (dim, 1)
+    b -- initialized scalar (corresponds to the bias)
+    """
+  
+    w = np.zeros(dim).reshape(dim, 1)
+    b = 0
+
+    # Check to see that the initialization worked
+    assert(w.shape == (dim, 1))
+    assert(isinstance(b, float) or isinstance(b, int))
+    
+    return w, b
+```
+
+##### Forward and Backward Propagation
+
+Now we write a function to compute the forward and backward propagation. We will use the two formulas: 
+
+<img src="Neural_Network_and_Deep_Learning.assets/image-20210310090107520.png" alt="image-20210310090107520" style="zoom:80%;" />
+
+We will associate these with two variables `dw` and `db`. 
+
+```python
+def propagate(w, b, X, Y):
+    """
+    Implement the cost function and its gradient for the propagation explained above
+
+    Arguments:
+    w -- weights, a numpy array of size (num_px * num_px * 3, 1)
+    b -- bias, a scalar
+    X -- data of size (num_px * num_px * 3, number of examples)
+    Y -- true "label" vector (containing 0 if non-cat, 1 if cat) of size (1, number of examples)
+
+    Return:
+    cost -- negative log-likelihood cost for logistic regression
+    dw -- gradient of the loss with respect to w, thus same shape as w
+    db -- gradient of the loss with respect to b, thus same shape as b
+    
+    Tips:
+    - Write your code step by step for the propagation. np.log(), np.dot()
+    """
+    
+    # Get the total sample length
+    m = X.shape[1]
+    
+    # FORWARD PROPAGATION (FROM X TO COST)
+    z = np.dot(w.T, X) + b
+    # compute activation
+    A = sigmoid(z)
+    # compute cost
+    cost = (-1/m) * (np.sum(Y*np.log(A) + (1-Y)*np.log(1-A)))     
+    
+    # BACKWARD PROPAGATION (TO FIND GRAD)
+    dw = (1/m)*(np.dot(X,(A - Y).T))
+    db = (1/m) * np.sum(A - Y)
+    
+    grads = {"dw": dw,
+             "db": db}
+    
+    return grads, cost
+```
+
+##### Optimization
+
+Now that we have created a pipeline to run the forward and backward propogation, we need to use gradient descent to find the optimal values of weights and bias: 
+
+```python
+def optimize(w, b, X, Y, num_iterations, learning_rate, print_cost = False):
+    """
+    This function optimizes w and b by running a gradient descent algorithm
+    
+    Arguments:
+    w -- weights, a numpy array of size (num_px * num_px * 3, 1)
+    b -- bias, a scalar
+    X -- data of shape (num_px * num_px * 3, number of examples)
+    Y -- true "label" vector (containing 0 if non-cat, 1 if cat), of shape (1, number of examples)
+    num_iterations -- number of iterations of the optimization loop
+    learning_rate -- learning rate of the gradient descent update rule
+    print_cost -- True to print the loss every 100 steps
+    
+    Returns:
+    params -- dictionary containing the weights w and bias b
+    grads -- dictionary containing the gradients of the weights and bias with respect to the cost function
+    costs -- list of all the costs computed during the optimization, this will be used to plot the learning curve.
+    
+    Tips:
+    You basically need to write down two steps and iterate through them:
+        1) Calculate the cost and the gradient for the current parameters. Use propagate().
+        2) Update the parameters using gradient descent rule for w and b.
+    """
+    
+    costs = []
+    
+    for i in range(num_iterations):
+        
+        
+        # Cost and gradient calculation
+        grads, cost = propagate(w, b, X, Y)
+        
+        # Retrieve derivatives from grads
+        dw = grads["dw"]
+        db = grads["db"]
+        
+        # update rule 
+        w = w - learning_rate * dw
+        b = b - learning_rate * db
+        
+        # Record the costs
+        if i % 100 == 0:
+            costs.append(cost)
+        
+        # Print the cost every 100 training iterations
+        if print_cost and i % 100 == 0:
+            print ("Cost after iteration %i: %f" %(i, cost))
+    
+    params = {"w": w,
+              "b": b}
+    
+    grads = {"dw": dw,
+             "db": db}
+    
+    return params, grads, costs
+```
+
+##### Implement the Predict Method
+
+Now that we have trained our NN, we implement a predict method: 
+
+```python
+def predict(w, b, X):
+    '''
+    Predict whether the label is 0 or 1 using learned logistic regression parameters (w, b)
+    
+    Arguments:
+    w -- weights, a numpy array of size (num_px * num_px * 3, 1)
+    b -- bias, a scalar
+    X -- data of size (num_px * num_px * 3, number of examples)
+    
+    Returns:
+    Y_prediction -- a numpy array (vector) containing all predictions (0/1) for the examples in X
+    '''
+    
+    m = X.shape[1]
+    Y_prediction = np.zeros((1,m))
+    w = w.reshape(X.shape[0], 1)
+    
+    # Compute vector "A" predicting the probabilities of a cat
+    # being present in the picture
+    z = np.dot(w.T, X) + b
+    A = sigmoid(z) 
+
+    for i in range(A.shape[1]):
+        
+        # Convert probabilities A[0,i] to actual predictions p[0,i]
+        if A[0,i] > 0.5:
+            Y_prediction[0,i] = 1
+        else:
+            Y_prediction[0,i] = 0
+    
+    return Y_prediction
+```
+
+##### Create a Final Model
+
+We can put all the above functions into a single function to run the whole thing: 
+
+```python
+def model(X_train, Y_train, X_test, Y_test, num_iterations = 2000, learning_rate = 0.5, print_cost = False):
+    """
+    Builds the logistic regression model by calling the function you've implemented previously
+    
+    Arguments:
+    X_train -- training set represented by a numpy array of shape (num_px * num_px * 3, m_train)
+    Y_train -- training labels represented by a numpy array (vector) of shape (1, m_train)
+    X_test -- test set represented by a numpy array of shape (num_px * num_px * 3, m_test)
+    Y_test -- test labels represented by a numpy array (vector) of shape (1, m_test)
+    num_iterations -- hyperparameter representing the number of iterations to optimize the parameters
+    learning_rate -- hyperparameter representing the learning rate used in the update rule of optimize()
+    print_cost -- Set to true to print the cost every 100 iterations
+    
+    Returns:
+    d -- dictionary containing information about the model.
+    """
+    
+    # initialize parameters with zeros (≈ 1 line of code)
+    w = np.zeros(X_train.shape[0]).reshape(X_train.shape[0], 1)
+    b = 0
+
+    # Gradient descent (≈ 1 line of code)
+    parameters, grads, costs = optimize(w, b, X_train, Y_train, num_iterations, learning_rate, print_cost)
+    
+    # Retrieve parameters w and b from dictionary "parameters"
+    w = parameters["w"]
+    b = parameters["b"]
+    
+    # Predict test/train set examples (≈ 2 lines of code)
+    Y_prediction_test = predict(w, b, X_test)
+    Y_prediction_train = predict(w, b, X_train)
+
+
+    # Print train/test Errors
+    print("train accuracy: {} %".format(100 -
+                  np.mean(np.abs(Y_prediction_train - Y_train)) * 100))
+    print("test accuracy: {} %".format(100 -
+                  np.mean(np.abs(Y_prediction_test - Y_test)) * 100))
+
+    
+    d = {"costs": costs,
+         "Y_prediction_test": Y_prediction_test, 
+         "Y_prediction_train" : Y_prediction_train, 
+         "w" : w, 
+         "b" : b,
+         "learning_rate" : learning_rate,
+         "num_iterations": num_iterations}
+    
+    return d
+```
+
+This completes the assignment for Week 2.
+
 ## Week 3: Shallow Neural Network
 
 In this week, we will learn to build a neural network with one hidden layer, using forward propagation and backpropagation. The learning objectives in this week are: 
@@ -1038,49 +1310,50 @@ In this week, we will learn to build a neural network with one hidden layer, usi
 -   Increase fluency in Deep Learning notations and Neural Network Representations
 -   Implement a 2-class classification neural network with a single hidden layer
 
-In the previous week, we saw how we can implement logistic regression as a neural network as a binary classification. In this calculations we had the following neural network: 
+In the previous week, we saw how we can implement logistic regression as a neural network for binary classification. In this calculations we had the following neural network:
 
 <img src="Neural_Network_and_Deep_Learning.assets/image-20210214094554492.png" alt="image-20210214094554492" style="zoom:80%;" />
 
-We used the features on the left, which passed through a neuron and output a prediction. If we were to expand all the steps that the neuron took, it would look something like this. There were two steps performed:
+We start with three features. These go into the neuron. Two steps are performed in the neuron: (1) the weighted sum of features and the bias. $z$,  and (2) the application of activation function on $z$. Finally, the cost function is computed. 
 
 <img src="Neural_Network_and_Deep_Learning.assets/image-20210214094645812.png" alt="image-20210214094645812" style="zoom:80%;" />
 
-We began with the features vector, the weights vector and the constant vector. The neuron did the following calculations: 
 
-1.  Computed the linear regression value based on feature weights, features, and the intercept
-2.  Computed the:
-    1.  logistic function of this linear regression value using the sigmoid function, this was our prediction. 
-    2.  Computed the loss function based on the prediction and actual label, which was our log loss. 
 
 ### Neural Network in this Week
 
-The above diagram is a scematic presentation of a neural network. What we now wish to introduce is something a little more involved and akin to what you would see. The neural network generally consists of multiple neurons, which look something like this: 
+The above diagram is a scematic presentation of a neural network. What we now wish to introduce is something a little more involved and akin to what you would see in a NN. The neural network generally consists of multiple neurons. So, rather than the features passing the information to a single neuron we saw earlier, they pass to multiple neurons as we see in the figure below.
 
 ![IMG_B8AF9B0CD9F5-1](Neural_Network_and_Deep_Learning.assets/IMG_B8AF9B0CD9F5-1.jpeg)
 
-You will notice here at the features not only go through the neurons but there is an interaction that happens between features at each of the neurons. The bunch of neurons right after the input is called the **first layer**. This layer performs the two calculations based on the initial weights and the intercept: 
+You will notice here that the features not only go through the neurons but there is an interaction that happens between features at each of the neurons. The bunch of neurons right after the input is called the **first layer**. Each neuron in this layer performs the two calculations based on the initial weights and the intercept: 
 
 1.  Computation of $z$
 2.  Computation of $\sigma(z)$
+
+Now the result from this step goes into the **second layer**. So, in our example, each neuron from the first layer return $\sigma(z)$ and these become inputs to the neuron in the second layer. Each of these inputs have their own associated weights. This single neuron does exactly the same thing: it takes the weighted sum of the inputs and passes that through another activation function. This result is then our prediction, $\hat{y}$. 
 
 We will denote weights and intercept used in this layer by a superscript value:
 
 ![IMG_12DADBA2EC4E-1](Neural_Network_and_Deep_Learning.assets/IMG_12DADBA2EC4E-1.jpeg)
 
-In this case we have two layers. The first layer uses the initial weights and the intercept to calculate $z$ and $\sigma(z)$. The second layer computes $z$ and $\sigma(z)$ based on new weights it has computed from the first layer. 
+In this case we have two layers. The first layer uses the initial weights and the intercept to calculate $z$ and $\sigma(z)$. This is something we are well familiar with: 
 
 ![IMG_90725955D9C7-1](Neural_Network_and_Deep_Learning.assets/IMG_90725955D9C7-1.jpeg)
 
+But notice how the first layer outputs $a^{[1]}$, which is nothing but the activation coming from the first layer. This now takes the roll of $x$ as it did in the first layer. In other words, the $z^{[2]}$ is simply the weighted sum of the activations.  The second layer computes $z$ and $\sigma(z)$ based on new weights it has computed from the first layer. 
+
+>   $z^{[2]}$ is simply the weighted sum of the activations. 
+
 The computation is then passed to the loss function. 
 
-The backward propogation happens by going through the second layer first and then going through the first layer.
+The backward propogation happens by going through the second layer first where the weights associated with the activation functions are changed slightly and then going through the first layer where the weights associated with the features are changed slightly. 
 
 >   The superscripts square brackets are used to identify the layer while the superscript round brackets are used to identify the $i$th sample. 
 
 ### Neural Network Representation
 
-Let's dig deeper and see what a two-layer neural network with a single hidden layer.
+Let's dig deeper and see what a two-layer neural network with a single hidden layer looks like.
 
 <img src="Neural_Network_and_Deep_Learning.assets/image-20210214102723841.png" alt="image-20210214102723841" style="zoom:60%;" />
 
@@ -1088,7 +1361,7 @@ This 2-layer neural network has the following components:
 
 *   **Input Layer** - This is the layer where all the features go into the neural network
 *   **Hidden Layer** - This layer is "hidden" from the user. It does the calculations based on the input values.
-*   **Output Layer** - This layer is the layer where the loss function is computed and the prediction is given back to the use. 
+*   **Output Layer** - This layer is the layer where the loss function is computed and the prediction is given back to the user. 
 
 We will use another set of convention to make our life easier for computation. 
 
@@ -1096,7 +1369,7 @@ We will use another set of convention to make our life easier for computation.
 
 We will use the symbol $a^{l}$ to represent a set of activations. For the input layer the activation is defined with $l=0$. 
 
-Now imagine the image above. It has three input features so the activation for the input layer may look something like this: 
+Now let's use the above figure to construct a NN with a hidden layer.  The above figure has three features. These form a column vector as seen below: 
 $$
 a^{[0]} = \begin{bmatrix} 
 x_1\\
@@ -1104,7 +1377,9 @@ x_2\\
 x_3 \\
 \end{bmatrix}
 $$
-The hidden layer will generate a set of activations based on the input layer. Because there is interaction between weights for each given feature, we will have 4 activation functions, each corresponding to a neuron in the hidden layer:
+We associate that to an activation function $a^{[0]}$.  Next we look at the hidden layer.
+
+The hidden layer will generate a set of activations based on the input layer. We have chosen to take 4 neurons or units in the hidden layer. Each unit will generate an activation function which will be associated with weights and a bias. Thus overall, we can write the activation function of the hidden layer as a column vector of individual unit activation function:
 $$
 a^{[1]} = f(w^{[1]},b^{[1]}) = \begin{bmatrix} 
 a^{[1]}_1\\
@@ -1113,7 +1388,7 @@ a^{[1]}_3 \\
 a^{[1]}_4 \\
 \end{bmatrix}
 $$
-Finally, we have the activations corresponding to the output layer: 
+Finally, we have the activation corresponding to the output layer. This is our prediction:
 $$
 a^{[2]} = f(w^{[2]},b^{[2]}) = \hat{y}\\
 $$
@@ -1154,7 +1429,7 @@ The convention followed is:
 
 <img src="Neural_Network_and_Deep_Learning.assets/image-20210214135515865.png" alt="image-20210214135515865" style="zoom:80%;" />
 
-We can write operations and activations in the hidden layer as follows: 
+We can write operations and activations in the hidden layer for our 2-layer neural network as follows: 
 
 ![IMG_5C7A4AA0CA28-1](Neural_Network_and_Deep_Learning.assets/IMG_5C7A4AA0CA28-1.jpeg)
 
@@ -1224,7 +1499,7 @@ With this we are ready to compute the activations across two layers. Typically, 
 
 This would be a non-vectorized way of doing it. It would also be slower than the vectorized here. The good thing is that we can easily vectorize the above. Here's how: 
 
-Note that our $a^{[0]}$ consists of a column vector with 3 features for a given instance. So, we can place our instances as columns in a given matrix, the computation of $W^{[1]}x^{(i)}$ is simply a dot product of a row of $W$ and a column of $x^{(i)}$. Now if $x^{(i)}$ were a matrix, the computation will not change but be the same. This is because a dot product of two matrices is simple a scaler multiplication of a row of one matrix and the column of a second matrix at a given time. 
+Note that our $a^{[0]}$ consists of a column vector with 3 features for a given instance. So, we can place our instances as columns in a given matrix, the computation of $W^{[1]}x^{(i)}$ is simply a dot product of a row of $W$ and a column of $x^{(i)}$. Now if $x^{(i)}$ were a matrix, the computation will not change but be the same. This is because a dot product of two matrices is simple a scalar multiplication of a row of one matrix and the column of a second matrix at a given time. 
 
 Thus we can can write the vectorized form of the above equation as: 
 
