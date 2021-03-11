@@ -1539,7 +1539,145 @@ We choose the activation function based on what the output should be. If the out
 
 >   Use the sigmoid function for the output layer and use the tanh and ReLU for hidden layers. This is when you wish the output to be between 0 and 1. 
 
+To summarize: 
+
+| Activation Function | Pros                                   | Cons                     |
+| ------------------- | -------------------------------------- | ------------------------ |
+| Sigmoid             | Helpful for binary categories          | GD does not work well    |
+| Tanh                | Much better tahn Sigmoid               | GD does not work well    |
+| ReLU                | Better for GD                          | Zero for negative values |
+| Leaky ReLU          | Better for GD; Non-zero for -ve values | None                     |
+
+
+
 ### Why we need non-linear Activation Function? 
+
+Let's see why we use a non-linear function by using a linear function instead. With a 2-layer NN, we have the following equations that we have seen earlier: 
+$$
+Z^{[1]} = W^{[1]}a^{[0]} + b^{[1]} \\[15pt]
+a^{[1]} = g^{[1]}(Z^{[1]}) \\[15pt]
+Z^{[1]} = W^{[1]}a^{[1]} + b^{[1]} \\[15pt]
+a^{[2]} = g^{[2]}(Z^{[2]}) \\[15pt]
+$$
+Here we assume that our activation function, $g^{[l]}$ is different in each layer. Now suppose that we use an identify activation function, which is simply $g(z) = z$. Such a identity function is a linear function. Let's see what happens to the above equations: 
+
+![IMG_39EF11116931-1](Neural_Network_and_Deep_Learning.assets/IMG_39EF11116931-1.jpeg)
+
+Now we replace $a^{[1]}$ in equation three to get: 
+
+<img src="Neural_Network_and_Deep_Learning.assets/IMG_39EF11116931-1%202.jpeg" alt="IMG_39EF11116931-1 2" style="zoom:80%;" />
+
+Now calling $W^{'} = (W^{[2]}W^{[1]})$ and $b^{'} = W^{[2]}b^{[1]} + b^{[1]}$, we can write the above equation as:
+
+<img src="Neural_Network_and_Deep_Learning.assets/IMG_39EF11116931-1%203.jpeg" alt="IMG_39EF11116931-1 3" style="zoom:80%;" />
+
+We see that this is simply a linear function of input features and biases. This looks very similar to the logisitc function we worked out before. In other words, having a hidden layer does not play any part when the activation function is linear. Thus not, using a hidden layer is exactly the same when using it. We can easily extrapolate this to multiple hidden layers. When we have these and we use a linear function, it is as good as not using any hidden layers. 
+
+The use of linear function boils down to simply using a linear regression to solve the problem. Then why even use a neural network? So, unless you use a non-linear function, NN is not very useful. However, note that when you are doing a linear regression, you will need to use a linear activation function, right before the output. But the hidden layers should be non-linear.
+
+### Derivatives of Activation Functions
+
+The derivatives of the activation functions are listed in the table below:
+
+| Activation Function | Mathematical Form             | Derivative                        |
+| ------------------- | ----------------------------- | --------------------------------- |
+| Sigmoid             | $g(z) = \frac{1}{1 + e^{-z}}$ | $g(z)(1-g(z))$                    |
+| Tahnh               | $g(z) = tanh(z)$              | $(1-g(z)^2)$                      |
+| ReLU                | $g(z) = max(0,z)$             | 0 if $z < 0$ else 1 if $z \geq 0$ |
+| Leaky ReLU          | $g(z) = max(0.01z, z)$        | 0.01 if $z < 0$ else 1 if $z > 0$ |
+
+### Gradient Descent for Neural Networks
+
+The following equations for forward propagation and backward propagation work for any neural network. For simplicity, we will use a NN with only two layers: 
+
+#### Forward Propagation Equations
+
+$$
+Z^{[1]} = W^{[1]}A^{[0]} + b^{[1]} \\[15pt]
+A^{[1]} = g^{[1]}(Z^{[1]}) \\[15pt]
+Z^{[2]} = W^{[2]}A^{[1]} + b^{[2]} \\[15pt]
+A^{[2]} = g^{[2]}(Z^{[2]}) \\[15pt]
+$$
+
+#### Backward Propagation Equations
+
+$$
+dz^{[2]} = A^{[2]} - Y \\[15pt]
+dw^{[2]} = \frac{1}{m}dz^{[2]}A^{[1]T} \\[15pt]
+db^{[2]} = \frac{1}{m}\sum^{m}_{i=1}dz^{[2]} \\[15pt]
+dz^{[1]} = W^{[2]T}dz^{[2]} \times dg^{[1]}(z^{[1]}) \\[15pt]
+dw^{[1]} = \frac{1}{m}dz^{[1]}X^T \\[15pt]
+db^{[1]} = \frac{1}{m}\sum^{m}_{i=1}dz^{[1]}
+$$
+
+Note the similarity between $db^{[i]}$ and $dw^{[i]}$. 
+
+
+
+### Week 3: Quiz
+
+1.  Which of the following is true? 
+
+    1.  $a^{[2]}_4$ is the activation output of the 2nd layer for the 4th training example
+    2.  $a^{[2]}_4$ is the activation output by the 4th neuron of the second layer
+    3.  $a^{[2](12)}$ denotes the activation vector of the 2nd layer for the 12th training example
+    4.  X is a matrix in which each row is one training example
+    5.  X is a matrix in which each column is one training example
+    6.  $a^{[2]}$ denotes the activation vector of the 2nd layer
+    7.  $a^{[2](12)}$ denotes activation vector of the 12th layer on the 2nd training example
+
+2.  The tanh activation usually works better than sigmoid activation function for hidden units because the mean of its output is closer to zero, and so it centers the data better for the next layer. True/False?
+
+3.  Which of these is a correct vectorized implementation of forward propgation for layer $l$, where $1 \leq l \leq L$. 
+
+4.  You are building a binary classifier for recognizing cucumbers (y=1) vs watermelons (y=0). Which one of these activation functions would you recommend using for the output layer?
+
+    1.  ReLU
+    2.  Leaky ReLU
+    3.  Sigmoid
+    4.  tanh
+
+5.  Consider the following code. What is the shape of B?
+
+    ```python
+    A = np.random.randn(4,3)
+    B = np.sum(A, axis = 1, keepdims = True)
+    ```
+
+6.  Suppose you have built a neural network. You decide to initialize the weights and biases to be zero. Which of the following statements is true?
+
+    1.  Each neuron in the first hidden layer will perform the same computation. So even after multiple iterations of gradient descent each neuron in the layer will be computing the same thing as other neurons. 
+    2.  Each neuron in the first hidden layer will perform the same computation in the first iteration. But after one iteration of gradient descent they will learn to compute different things because we have “broken symmetry”.
+    3.  Each neuron in the first hidden layer will compute the same thing, but neurons in different layers will compute different things, thus we have accomplished “symmetry breaking” as described in lecture. 
+    4.  The first hidden layer’s neurons will perform different computations from each other even in the first iteration; their parameters will thus keep evolving in their own way.
+
+7.  Logistic regression’s weights w should be initialized randomly rather than to all zeros, because if you initialize to all zeros, then logistic regression will fail to learn a useful decision boundary because it will fail to “break symmetry”, True/False?
+
+8.  You have built a network using the tanh activation for all the hidden units. You initialize the weights to relative large values, using np.random.randn(..,..)*1000. What will happen? 
+
+    1.  It doesn’t matter. So long as you initialize the weights randomly gradient descent is not affected by whether the weights are large or small. 
+    2.  This will cause the inputs of the tanh to also be very large, thus causing gradients to also become large. You therefore have to set α*α* to be very small to prevent divergence; this will slow down learning. 
+    3.  This will cause the inputs of the tanh to also be very large, thus causing gradients to be close to zero. The optimization algorithm will thus become slow. 
+    4.  This will cause the inputs of the tanh to also be very large, causing the units to be “highly activated” and thus speed up learning compared to if the weights had to start from small values.
+
+9.  Consider the following NN: 
+    ![image-20210310172529163](Neural_Network_and_Deep_Learning.assets/image-20210310172529163.png)
+    What would be the dimensions of $W^{[1]}, b^{[1]}, W^{[2]}, b^{[2]}$?
+
+10.  In the same network as the previous question, what are the dimensions of $Z^{[1]}, a^{[1]}$?
+
+### Quiz Answers
+
+1.  Choices: 2, 3, 5, 6 are true
+2.  True.Yes. As seen in lecture the output of the tanh is between -1 and 1, it thus centers the data which makes the learning simpler for the next layer.
+3.  That would be $Z^{[l]} = W^{[l]}A^{[l-1]} + b^{[l]}$; $A^{[l]} = g^{[l]}(Z^{[l]})$. 
+4.  As the output should be between 0 and 1, we will use the sigmoid function
+5.  We sum the rows of A so that will create a column vector with 4 elements. As we use `keepdims=True`, the dimensions will be (4,1)
+6.  Answer is the first because the computation will be exactly the same.
+7.  False. Yes, Logistic Regression doesn't have a hidden layer. If you initialize the weights to zeros, the first example x fed in the logistic regression will output zero but the derivatives of the Logistic Regression depend on the input x (because there's no hidden layer) which is not zero. So at the second iteration, the weights values follow x's distribution and are different from each other if x is not a constant vector. 
+8.  The answer is 3. Yes. tanh becomes flat for large values, this leads its gradient to be close to zero. This slows down the optimization algorithm.
+9.  $W^{[1]}: (4,2); b^{[1]}:(4,1)$ while $W^{[2]}:(1,4);  b^{[2]}:(1,1)$
+10.  Both would be $(4,m)$
 
 
 
