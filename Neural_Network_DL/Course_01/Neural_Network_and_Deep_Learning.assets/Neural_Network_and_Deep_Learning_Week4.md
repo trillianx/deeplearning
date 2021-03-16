@@ -22,9 +22,9 @@ So far we have seen shallow neural network and a neural network with two hidden 
 
 <img src="Neural_Network_and_Deep_Learning_Week4.assets/image-20210311130553614.png" alt="image-20210311130553614" style="zoom:80%;" />
 
-We have seen the top neural networks. Note that we do not count the input layer in the total number of layers. Therefore, the top left is a 1-layer NN. The top right is a 2-layer NN while the bottom ones are 3-layer and 6-layer neural networks. We will use the uppercase $L$ to denote the number of layers in a given NN, while we will use $n^{[l]}$ to denote the number of units in the $l$th layer. 
+So far we've seen the neural networks at the top of the figure. Note that we do not count the input layer in the total number of layers. Therefore, the top left is a 1-layer NN. The top right is a 2-layer NN while the bottom ones are 3-layer and 6-layer neural networks. We will use the uppercase $L$ to denote the number of layers in a given NN, while we will use $n^{[l]}$ to denote the number of units in the $l$th layer. 
 
-For example, if we look at the NN with 5 hidden layer, we would say, $L=6$ and $n^{[2]} = 4$, $n^{[5]} = 3$ while $n^{[6]} = 1$. We will denote $n^{[0]}$ to be the nodes corresponding to the input layer. So, $n^{[0]}= 3$ in our example. 
+For example, if we look at the NN with 5 hidden layer, we would say, $L=6$ and $n^{[2]} = 4$ units, $n^{[5]} = 3$ units while $n^{[6]} = 1$ units. We will denote $n^{[0]}$ to be the nodes/units corresponding to the input layer. So, $n^{[0]}= 3$ units in our example. 
 
 Finally, we have already defined the activation: $a^{[0]}= X$, i.e., the input feature vector. We define $a^{[L]} = \hat{y}$ to be the output prediction vector.   
 
@@ -40,7 +40,7 @@ $$
 z^{[l]} = w^{[l]}a^{[l-1]} + b^{[l]} \\[15pt]
 a^{[l]} = g^{[l]}(z^{[l]})
 $$
-For the whole training set, for a given layer, we would have: 
+For the whole training set with multiple instances, for a given layer, we would have: 
 $$
 Z^{[l]} = W^{[l]}A^{[l-1]} + B^{[l]} \\[15pt]
 A^{[l]} = g^{[l]}(Z^{[l]})
@@ -113,3 +113,84 @@ In short, NN learn progressively and so if NN is deep, it has that many layers t
 
 ## Building Blocks of Deep Neural Networks
 
+Let's look back at the equations that we will use for forward and backward propagations. For a 2-layer NN, we have the following: 
+
+**Foward Propagation**
+$$
+Z^{[1]} = W^{[1]}A^{[0]} + b^{[1]} \\[15pt]
+A^{[1]} = g^{[1]}(Z^{[1]}) \\[15pt]
+Z^{[2]} = W^{[2]}A^{[1]} + b^{[2]} \\[15pt]
+A^{[2]} = g^{[2]}(Z^{[2]}) \\[15pt]
+$$
+**Backward Propagation**
+$$
+dz^{[2]} = A^{[2]} - Y \\[15pt]
+dw^{[2]} = \frac{1}{m}dz^{[2]}A^{[1]T} \\[15pt]
+db^{[2]} = \frac{1}{m}\sum^{m}_{i=1}dz^{[2]} \\[15pt]
+dz^{[1]} = W^{[2]T}dz^{[2]} \times dg^{[1]}(z^{[1]}) \\[15pt]
+dw^{[1]} = \frac{1}{m}dz^{[1]}X^T \\[15pt]
+db^{[1]} = \frac{1}{m}\sum^{m}_{i=1}dz^{[1]}
+$$
+We did not include $da^{[2]}$ and $da^{[1]}$ but it is understood as something we could compute given that we have computed $dz^{[2]}$ and $dz^{[1]}$. 
+
+Now in general, for a given layer, we have the following equations for **forward propagation** and backward propagation:
+$$
+Z^{[l]} = W^{[l]}A^{[l-1]} + B^{[l]} \\[15pt]
+A^{[l]} = g^{[l]}(Z^{[l]}) \\[15pt]
+\rule{4cm}{0.4pt} \\[15pt]
+dZ^{[l]} = dA^{[l]} \times dg^{[l]}(Z^{[l]}) \\[15pt]
+dW^{[l]} = \frac{1}{m}dZ^{[l]}A^{[l-1]T} \\[15pt]
+dB^{[l]} = \frac{1}{m}\sum^{m}_{i=1}dZ^{[l]} \\[15pt]
+dA^{[l]} = W^{[l]T}dZ^{[l]}
+$$
+It is generally useful to cache the values $W^{[l]},B^{[l]}$ and $Z^{[l]}$ as it will be useful for backward propagation. Graphically, we can write this as: 
+
+![IMG_2C2FE17DF18A-1](Neural_Network_and_Deep_Learning_Week4.assets/IMG_2C2FE17DF18A-1.jpeg)
+
+So, a given layer receives $a^{[l-1]}$ from the previous layer, the current layer computes the weights and the bias for that layer along with $z^{[l]}$. It then outputs $a^{[l]}$ to the next layer. In the meantime, it caches the weights, the bias and the $z^{{[l]}}$ so that it can be used in the backpropagation step. 
+
+Now, in the backpropagation step, the layer takes in $da^{[l]}$, uses the weights and the bias to compute $dz^{[l]}$ including $dw^{[l]}, db^{[l]}$ and outputs $da^{[l-1]}$. 
+
+Graphically, we can see how this would work for a $L$-layered NN: 
+
+![IMG_F13AD69C2C0E-1](Neural_Network_and_Deep_Learning_Week4.assets/IMG_F13AD69C2C0E-1.jpeg)
+
+Note that we could compute $da^{[0]}$ but that is not important in the supervised learning scenario. The pink arrows are the cache that will store the values $z^{[l]}, w^{{l}}, b^{[l]}$ as these are used in the backward propagation step. 
+
+### More Concrete Example
+
+There has been a lot of algebra to generalize the construction of forward and backward propagation steps. Let's use a simple example of 3-L NN and see this in action. Suppose the problem involves binary classification in which case we will make use of the logloss cost function. We can draw the boxes as follows for forward propagation: 
+
+![IMG_FE49C3D35F41-1](Neural_Network_and_Deep_Learning_Week4.assets/IMG_FE49C3D35F41-1.jpeg)
+
+Now we write the equations for each layer: 
+
+**Forward Propagation**
+
+Layer 1: 
+$$
+A^{[0]} = X \\[15pt]
+Z^{[1]} = W^{[1]T}A^{[0]} + B^{[1]} \\[15pt]
+A^{[1]} = g^{[1]}(Z^{[1]})
+$$
+Layer 2:
+$$
+Z^{[2]} = W^{[2]T}A^{[1]} + B^{[2]} \\[15pt]
+A^{[2]} = g^{[2]}(Z^{[2]})
+$$
+Layer 3:
+$$
+Z^{[3]} = W^{[3]T}A^{[2]} + B^{[3]} \\[15pt]
+A^{[3]} = g^{[3]}(Z^{[3]})
+$$
+So, now, we have our predictions: $A^{[3]} = \hat{y}$. We can then compute the cost function for this forward pass. 
+
+Now we are ready to do the backward propagation: 
+
+Layer 3:
+$$
+dA^{[3]} = \sum^{m}_{i=1}\left(-\frac{y^{(i)}}{a^{(i)}} + \frac{(1-y^{(i)})}{(1-a^{(i)})} \right) \\[15pt]
+dZ^{[3]} = dA^{[3]}\times dg^{[3]}(Z^{[3]}) \\[15pt]
+dW^{[3]} = \frac{1}{m}dZ^{[3]}A^{[2]T} \\[15pt]
+dB^{[3]} = \frac{1}{m}\sum_{i=1}^mdZ^{[3]}
+$$
