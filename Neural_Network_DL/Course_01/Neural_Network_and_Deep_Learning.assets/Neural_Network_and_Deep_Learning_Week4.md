@@ -141,7 +141,7 @@ A^{[l]} = g^{[l]}(Z^{[l]}) \\[15pt]
 dZ^{[l]} = dA^{[l]} \times dg^{[l]}(Z^{[l]}) \\[15pt]
 dW^{[l]} = \frac{1}{m}dZ^{[l]}A^{[l-1]T} \\[15pt]
 dB^{[l]} = \frac{1}{m}\sum^{m}_{i=1}dZ^{[l]} \\[15pt]
-dA^{[l]} = W^{[l]T}dZ^{[l]}
+dA^{[l-1]} = W^{[l]T}dZ^{[l]}
 $$
 It is generally useful to cache the values $W^{[l]},B^{[l]}$ and $Z^{[l]}$ as it will be useful for backward propagation. Graphically, we can write this as: 
 
@@ -185,12 +185,46 @@ A^{[3]} = g^{[3]}(Z^{[3]})
 $$
 So, now, we have our predictions: $A^{[3]} = \hat{y}$. We can then compute the cost function for this forward pass. 
 
-Now we are ready to do the backward propagation: 
-
-Layer 3:
+Now we are ready to do the backward propagation. First we have the input the layer 3: 
 $$
 dA^{[3]} = \sum^{m}_{i=1}\left(-\frac{y^{(i)}}{a^{(i)}} + \frac{(1-y^{(i)})}{(1-a^{(i)})} \right) \\[15pt]
+$$
+Layer 3:
+$$
 dZ^{[3]} = dA^{[3]}\times dg^{[3]}(Z^{[3]}) \\[15pt]
 dW^{[3]} = \frac{1}{m}dZ^{[3]}A^{[2]T} \\[15pt]
-dB^{[3]} = \frac{1}{m}\sum_{i=1}^mdZ^{[3]}
+dB^{[3]} = \frac{1}{m}\sum_{i=1}^mdZ^{[3]} \\[15pt]
+dA^{[2]} = W^{[3]T}dZ^{[3]}
 $$
+Layer 2:
+$$
+dZ^{[2]} = dA^{[2]}\times dg^{[2]}(Z^{[2]}) \\[15pt]
+dW^{[2]} = \frac{1}{m}dZ^{[2]}A^{[1]T} \\[15pt]
+dB^{[2]} = \frac{1}{m}\sum_{i=1}^mdZ^{[2]} \\[15pt]
+dA^{[1]} = W^{[2]T}dZ^{[2]}
+$$
+Layer 1:
+$$
+dZ^{[1]} = dA^{[1]}\times dg^{[1]}(Z^{[1]}) \\[15pt]
+dW^{[1]} = \frac{1}{m}dZ^{[1]}A^{[1]T} \\[15pt]
+dB^{[1]} = \frac{1}{m}\sum_{i=1}^mdZ^{[1]} \\[15pt]
+dA^{[0]} = W^{[1]T}dZ^{[1]}
+$$
+And of course, we have the gradient descent updating the weights and the bias: 
+$$
+W^{[l]} = W^{[l]} - \alpha dW^{[l]} \\[15pt]
+B^{[l]} = B^{[l]} - \alpha dB^{[l]}
+$$
+which is done at each of the layer. So, at each layer when we compute $dW^{[l]}$ and $dB^{[l]}$. So, we get the $W^{[l]}$ and $B^{[l]}$ from the cache when we do the forward propagation. On the backpropagation, we take this $W^{[l]}$ and $B^{[l]}$ and pass along the $dW^{[l]}$ and $dB^{[l]}$ to the gradient descent algorithm. The new weights and computed which are then passed back to the backpropagation. 
+
+Technically, the $dA^{[0]}$ is not computed for supervised learning as we do not change the input features. 
+
+## Paramaters and Hyperparameters
+
+In deep learning the weights and the bias are the parameters. The hyperparameters of neural networks are: 
+
+*   Learning Rate
+*   Number of iterations. This is to run the NN a number of times over
+*   The number of hidden layers
+*   The number of hidden units in each layer
+*   Choice of activation function
